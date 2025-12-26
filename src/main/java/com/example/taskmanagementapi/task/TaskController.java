@@ -2,11 +2,14 @@ package com.example.taskmanagementapi.task;
 
 import com.example.taskmanagementapi.task.dto.CreateTaskRequest;
 import com.example.taskmanagementapi.task.dto.TaskResponse;
-import com.example.taskmanagementapi.task.dto.UpdateTaskStatusRequest;
+import com.example.taskmanagementapi.task.dto.UpdateTaskRequest;
+import com.example.taskmanagementapi.task.mapper.TaskMapper;
 import com.example.taskmanagementapi.user.User;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -37,18 +40,19 @@ public class TaskController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<TaskResponse> getMyTask(@AuthenticationPrincipal User user) {
+    public Page<TaskResponse> getMyTask(@AuthenticationPrincipal User user, Pageable pageable) {
         System.out.println("AUTH USER = " + user);
-        return taskService.getMyTasks(user);
+        return taskService.getMyTasks(user, pageable);
     }
 
-    @PatchMapping("/{id}/status")
-    public Task updateStatus(
+    @PatchMapping("/{id}")
+    public TaskResponse updateTask(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateTaskStatusRequest request,
+            @Valid @RequestBody UpdateTaskRequest request,
             @AuthenticationPrincipal User user
     ) {
-        return taskService.updateStatus(id, request.getStatus(), user);
+        Task updateTask = taskService.updateTask(id, request, user);
+        return TaskMapper.toResponse(updateTask);
     }
 
     @DeleteMapping("/{id}")
