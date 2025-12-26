@@ -7,8 +7,10 @@ import com.example.taskmanagementapi.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository taskRepository;
+
     private TaskResponse toResponse(Task task) {
         return TaskResponse.builder()
                 .id(task.getId())
@@ -78,13 +81,13 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    @Transactional
     public void deleteTask(UUID taskId, User user) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        if (!task.getOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied");
-        }
+        Task task = taskRepository.findByIdAndOwnerId(taskId, user.getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Task not found or you are not the owner"
+                ));
 
         taskRepository.delete(task);
     }

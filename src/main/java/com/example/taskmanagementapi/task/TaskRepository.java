@@ -11,4 +11,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     Page<Task> findByOwnerId(UUID owner_id, Pageable pageable);
 
     Optional<Task> findByIdAndOwnerId(UUID id, UUID owner_id);
+
+    boolean existsByIdAndOwnerId(UUID id, UUID owner_id);
 }
