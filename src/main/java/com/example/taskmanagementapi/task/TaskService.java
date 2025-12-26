@@ -1,5 +1,6 @@
 package com.example.taskmanagementapi.task;
 
+import com.example.taskmanagementapi.task.dto.TaskResponse;
 import com.example.taskmanagementapi.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,20 +12,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository taskRepository;
+    private TaskResponse toResponse(Task task) {
+        return TaskResponse.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .status(task.getStatus())
+                .priority(task.getPriority())
+                .createdAt(task.getCreatedAt())
+                .build();
+    }
 
-    public Task createTask(String title, String description, User user) {
+    public TaskResponse createTask(String title, String description, Priority priority, User user) {
         Task task = Task.builder()
                 .title(title)
                 .description(description)
                 .status(TaskStatus.TODO)
+                .priority(priority != null ? priority : Priority.MEDIUM)
                 .owner(user)
                 .build();
 
-        return taskRepository.save(task);
+        return toResponse(taskRepository.save(task));
     }
 
-    public List<Task> getMyTasks(User user) {
-        return taskRepository.findByOwnerId(user.getId());
+    public List<TaskResponse> getMyTasks(User user) {
+        return taskRepository.findByOwnerId(user.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public Task updateStatus(UUID taskId, TaskStatus status, User user) {

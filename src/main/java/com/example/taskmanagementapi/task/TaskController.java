@@ -1,6 +1,7 @@
 package com.example.taskmanagementapi.task;
 
 import com.example.taskmanagementapi.task.dto.CreateTaskRequest;
+import com.example.taskmanagementapi.task.dto.TaskResponse;
 import com.example.taskmanagementapi.task.dto.UpdateTaskStatusRequest;
 import com.example.taskmanagementapi.user.User;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,19 +23,21 @@ public class TaskController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Task createTask(
+    public TaskResponse createTask(
             @Valid @RequestBody CreateTaskRequest request,
             @AuthenticationPrincipal User user
     ) {
         return taskService.createTask(
                 request.getTitle(),
-                request.getDesctiption(),
+                request.getDescription(),
+                request.getPriority(),
                 user
         );
     }
 
     @GetMapping
-    public List<Task> getMyTask(@AuthenticationPrincipal User user) {
+    @ResponseStatus(HttpStatus.OK)
+    public List<TaskResponse> getMyTask(@AuthenticationPrincipal User user) {
         System.out.println("AUTH USER = " + user);
         return taskService.getMyTasks(user);
     }
