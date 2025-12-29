@@ -1,5 +1,6 @@
 package com.example.taskmanagementapi.task;
 
+import com.example.taskmanagementapi.common.exception.PageableUtil;
 import com.example.taskmanagementapi.task.dto.TaskFilterRequest;
 import com.example.taskmanagementapi.task.dto.TaskResponse;
 import com.example.taskmanagementapi.task.dto.UpdateTaskRequest;
@@ -50,8 +51,10 @@ public class TaskService {
             TaskFilterRequest filter,
             User user,
             Pageable pageable) {
+        Pageable finalPageable =
+                PageableUtil.withDefaultSort(pageable, "createdAt");
         return taskRepository
-                .findAll(TaskSpecification.filter(filter, user), pageable)
+                .findAll(TaskSpecification.filter(filter, user), finalPageable)
                 .map(taskMapper::toResponse);
     }
 
