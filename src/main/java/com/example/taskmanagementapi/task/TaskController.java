@@ -23,6 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
+    private final TaskMapper taskMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -51,8 +52,7 @@ public class TaskController {
             @Valid @RequestBody UpdateTaskRequest request,
             @AuthenticationPrincipal User user
     ) {
-        Task updateTask = taskService.updateTask(id, request, user);
-        return TaskMapper.toResponse(updateTask);
+        return taskService.updateTask(id, request, user);
     }
 
     @DeleteMapping("/{id}")

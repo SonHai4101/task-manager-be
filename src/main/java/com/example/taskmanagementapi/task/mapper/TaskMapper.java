@@ -2,18 +2,14 @@ package com.example.taskmanagementapi.task.mapper;
 
 import com.example.taskmanagementapi.task.Task;
 import com.example.taskmanagementapi.task.dto.TaskResponse;
+import com.example.taskmanagementapi.task.dto.UpdateTaskRequest;
+import org.mapstruct.*;
 
-public class TaskMapper {
-    private TaskMapper() {}
+@Mapper(componentModel = "spring")
+public interface TaskMapper {
 
-    public static TaskResponse toResponse(Task task) {
-        return TaskResponse.builder()
-                .id(task.getId())
-                .title(task.getTitle())
-                .description(task.getDescription())
-                .status(task.getStatus())
-                .priority(task.getPriority())
-                .createdAt(task.getCreatedAt())
-                .build();
-    }
+    TaskResponse toResponse(Task task);
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateTaskFromRequest(UpdateTaskRequest request,
+                               @MappingTarget Task task);
 }

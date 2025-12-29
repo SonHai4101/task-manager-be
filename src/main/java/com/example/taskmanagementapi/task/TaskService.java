@@ -19,6 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
     private TaskResponse toResponse(Task task) {
         return TaskResponse.builder()
@@ -46,17 +47,18 @@ public class TaskService {
     public Page<TaskResponse> getMyTasks(User user, Pageable pageable) {
         return taskRepository
                 .findByOwnerId(user.getId(), pageable)
-                .map(TaskMapper::toResponse);
+                .map(taskMapper::toResponse);
     }
 
     @Transactional
-    public Task updateTask(
+    public TaskResponse updateTask(
             UUID taskId,
             UpdateTaskRequest request,
             User currentUser
     ) {
         Task task = taskRepository.findByIdAndOwnerId(taskId, currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Task not found"));
 
         if (request.getTitle() != null) {
             task.setTitle(request.getTitle());
@@ -78,7 +80,8 @@ public class TaskService {
             task.setDueDate(request.getDueDate());
         }
 
-        return taskRepository.save(task);
+        taskMapper.updateTaskFromRequest(request, task);
+        return taskMapper.toResponse(taskRepository.save(task));
     }
 
     @Transactional
