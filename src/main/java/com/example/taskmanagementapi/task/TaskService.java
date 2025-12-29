@@ -1,8 +1,10 @@
 package com.example.taskmanagementapi.task;
 
+import com.example.taskmanagementapi.task.dto.TaskFilterRequest;
 import com.example.taskmanagementapi.task.dto.TaskResponse;
 import com.example.taskmanagementapi.task.dto.UpdateTaskRequest;
 import com.example.taskmanagementapi.task.mapper.TaskMapper;
+import com.example.taskmanagementapi.task.spec.TaskSpecification;
 import com.example.taskmanagementapi.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,9 +46,12 @@ public class TaskService {
         return toResponse(taskRepository.save(task));
     }
 
-    public Page<TaskResponse> getMyTasks(User user, Pageable pageable) {
+    public Page<TaskResponse> getMyTasks(
+            TaskFilterRequest filter,
+            User user,
+            Pageable pageable) {
         return taskRepository
-                .findByOwnerId(user.getId(), pageable)
+                .findAll(TaskSpecification.filter(filter, user), pageable)
                 .map(taskMapper::toResponse);
     }
 

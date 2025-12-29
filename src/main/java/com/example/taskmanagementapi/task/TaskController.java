@@ -1,6 +1,7 @@
 package com.example.taskmanagementapi.task;
 
 import com.example.taskmanagementapi.task.dto.CreateTaskRequest;
+import com.example.taskmanagementapi.task.dto.TaskFilterRequest;
 import com.example.taskmanagementapi.task.dto.TaskResponse;
 import com.example.taskmanagementapi.task.dto.UpdateTaskRequest;
 import com.example.taskmanagementapi.task.mapper.TaskMapper;
@@ -41,9 +42,12 @@ public class TaskController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Page<TaskResponse> getMyTask(@AuthenticationPrincipal User user, Pageable pageable) {
-        System.out.println("AUTH USER = " + user);
-        return taskService.getMyTasks(user, pageable);
+    public Page<TaskResponse> getMyTask(
+            TaskFilterRequest filter,
+            @AuthenticationPrincipal User user,
+            Pageable pageable) {
+//        System.out.println("AUTH USER = " + user);
+        return taskService.getMyTasks(filter, user, pageable);
     }
 
     @PatchMapping("/{id}")
