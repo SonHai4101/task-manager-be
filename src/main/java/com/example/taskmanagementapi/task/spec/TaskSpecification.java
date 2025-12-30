@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class TaskSpecification {
 
@@ -22,6 +23,10 @@ public class TaskSpecification {
             // 🔐 Only user’s tasks
             predicates.add(
                     cb.equal(root.get("owner").get("id"), user.getId())
+            );
+
+            predicates.add(
+                    cb.isNull(root.get("deletedAt"))
             );
 
             if (filter.getTaskStatus() != null) {
@@ -67,5 +72,12 @@ public class TaskSpecification {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    public static Specification<Task> trash(User user) {
+        return (root, query, cb) -> cb.and(
+                cb.equal(root.get("owner"), user),
+                cb.isNotNull(root.get("deletedAt"))
+        );
     }
 }

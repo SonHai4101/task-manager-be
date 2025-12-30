@@ -5,6 +5,11 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -23,4 +28,32 @@ import org.springframework.context.annotation.Configuration;
         bearerFormat = "JWT"
 )
 public class OpenApiConfig {
+        @Bean
+        public OpenAPI pageableOpenAPI() {
+                return new OpenAPI()
+                        .components(
+                                new Components()
+                                        .addParameters(
+                                                "page",
+                                                new Parameter()
+                                                        .name("page")
+                                                        .in("query")
+                                                        .schema(new Schema<Integer>().type("integer")._default(0))
+                                        )
+                                        .addParameters(
+                                                "size",
+                                                new Parameter()
+                                                        .name("size")
+                                                        .in("query")
+                                                        .schema(new Schema<Integer>().type("integer")._default(10))
+                                        )
+                                        .addParameters(
+                                                "sort",
+                                                new Parameter()
+                                                        .name("sort")
+                                                        .in("query")
+                                                        .schema(new Schema<String>().type("string")._default("createdAt,desc"))
+                                        )
+                        );
+        }
 }

@@ -48,27 +48,6 @@ public class TaskController {
     }
 
     @Operation(summary = "Get my tasks")
-    @Parameters({
-            @Parameter(
-                    name = "page",
-                    in = ParameterIn.QUERY,
-                    schema = @Schema(type = "integer", defaultValue = "0")
-            ),
-            @Parameter(
-                    name = "size",
-                    in = ParameterIn.QUERY,
-                    schema = @Schema(type = "integer", defaultValue = "10")
-            ),
-            @Parameter(
-                    name = "sort",
-                    in = ParameterIn.QUERY,
-                    schema = @Schema(
-                            type = "string",
-                            defaultValue = "createdAt,desc",
-                            example = "createdAt,desc"
-                    )
-            )
-    })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public Page<TaskResponse> getMyTask(
@@ -102,5 +81,21 @@ public class TaskController {
             @AuthenticationPrincipal User user
     ) {
         taskService.deleteTask(id, user);
+    }
+
+    @Operation(summary = "Get my trash tasks")
+    @GetMapping("/trash")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<TaskResponse> getTrashTasks(
+            @ParameterObject
+            @Parameter(hidden = true)
+            @PageableDefault(
+                    size = 10,
+                    sort = "deletedAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable,
+            @AuthenticationPrincipal User user
+    ) {
+        return taskService.getTrashTasks(user, pageable);
     }
 }

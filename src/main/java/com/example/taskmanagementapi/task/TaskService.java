@@ -10,11 +10,14 @@ import com.example.taskmanagementapi.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +53,8 @@ public class TaskService {
     public Page<TaskResponse> getMyTasks(
             TaskFilterRequest filter,
             User user,
-            Pageable pageable) {
+            Pageable pageable
+    ) {
         Pageable finalPageable =
                 PageableUtil.withDefaultSort(pageable, "createdAt");
         return taskRepository
@@ -100,6 +104,18 @@ public class TaskService {
                         "Task not found or you are not the owner"
                 ));
 
-        taskRepository.delete(task);
+        task.setDeletedAt(LocalDateTime.now());
+    }
+
+    public Page<TaskResponse> getTrashTasks(
+            User user,
+            Pageable pageable
+    ) {
+        Pageable finalPageable =
+                PageableUtil.withDefaultSort(pageable, "deletedAt");
+
+        return taskRepository
+                .findAll(TaskSpecification.trash(user), finalPageable)
+                .map(taskMapper::toResponse);
     }
 }
