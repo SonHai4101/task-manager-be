@@ -5,6 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,7 +17,17 @@ public interface TaskRepository
 
     Optional<Task> findByIdAndOwnerId(UUID id, UUID owner_id);
 
-    Optional<Task> findByIdAndOwnerIdAndDeletedAtIsNotNull(UUID id, UUID ownerId);
+    List<Task> findAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
+            List<UUID> ids,
+            UUID ownerId
+    );
+
+    void deleteAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
+            List<UUID> ids,
+            UUID ownerId
+    );
+
+    void deleteAllByDeletedAtBefore(LocalDateTime threshold);
 
     boolean existsByIdAndOwnerId(UUID id, UUID owner_id);
 }

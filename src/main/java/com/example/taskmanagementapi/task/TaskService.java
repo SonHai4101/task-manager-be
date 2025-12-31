@@ -124,14 +124,22 @@ public class TaskService {
     }
 
     @Transactional
-    public Task restoreTask(UUID taskId, User user) {
-        Task task = taskRepository
-                .findByIdAndOwnerIdAndDeletedAtIsNotNull(taskId, user.getId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Task not found in trash")
-                );
+    public void restoreTasks(List<UUID> ids, User user) {
+        List<Task> tasks = taskRepository
+                .findAllByIdInAndOwnerIdAndDeletedAtIsNotNull(ids, user.getId());
 
-        task.setDeletedAt(null);
-        return task;
+        if (tasks.isEmpty()) {
+            throw new IllegalArgumentException("No tasks found in trash");
+        }
+
+        tasks.forEach(task -> task.setDeletedAt(null));
+    }
+
+    @Transactional
+    public void permanentlyDeleteTasks(List<UUID> ids, User user) {
+        taskRepository.deleteAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
+                ids,
+                user.getId()
+        );
     }
 }

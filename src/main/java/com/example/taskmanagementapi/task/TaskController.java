@@ -1,16 +1,10 @@
 package com.example.taskmanagementapi.task;
 
-import com.example.taskmanagementapi.task.dto.CreateTaskRequest;
-import com.example.taskmanagementapi.task.dto.TaskFilterRequest;
-import com.example.taskmanagementapi.task.dto.TaskResponse;
-import com.example.taskmanagementapi.task.dto.UpdateTaskRequest;
+import com.example.taskmanagementapi.task.dto.*;
 import com.example.taskmanagementapi.task.mapper.TaskMapper;
 import com.example.taskmanagementapi.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -99,15 +93,26 @@ public class TaskController {
         return taskService.getTrashTasks(user, pageable);
     }
 
-    @PatchMapping("/{id}/restore")
-    @Operation(summary = "restore task from trash")
-    @ResponseStatus(HttpStatus.OK)
-    public TaskResponse restoreTask(
-            @PathVariable UUID id,
+    @PatchMapping("/restore")
+    @Operation(summary = "Restore multiple tasks from trash")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void restoreTask(
+            @Valid @RequestBody BulkTaskActionRequest request,
             @AuthenticationPrincipal User user
     ) {
-        return taskMapper.toResponse(
-                taskService.restoreTask(id, user)
-        );
+        taskService.restoreTasks(request.ids(), user);
+    }
+
+    @DeleteMapping("/trash")
+    @Operation(
+            summary = "Permanently delete tasks from trash",
+            description = "This action is irreversible"
+    )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void permanentlyDeleteTasks(
+            @Valid @RequestBody BulkTaskActionRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        taskService.permanentlyDeleteTasks(request.ids(), user);
     }
 }
