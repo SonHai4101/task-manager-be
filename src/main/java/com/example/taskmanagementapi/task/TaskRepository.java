@@ -15,5 +15,7 @@ public interface TaskRepository
 
     Optional<Task> findByIdAndOwnerId(UUID id, UUID owner_id);
 
+    Optional<Task> findByIdAndOwnerIdAndDeletedAtIsNotNull(UUID id, UUID ownerId);
+
     boolean existsByIdAndOwnerId(UUID id, UUID owner_id);
 }

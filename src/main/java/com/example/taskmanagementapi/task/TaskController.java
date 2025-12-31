@@ -98,4 +98,16 @@ public class TaskController {
     ) {
         return taskService.getTrashTasks(user, pageable);
     }
+
+    @PatchMapping("/{id}/restore")
+    @Operation(summary = "restore task from trash")
+    @ResponseStatus(HttpStatus.OK)
+    public TaskResponse restoreTask(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User user
+    ) {
+        return taskMapper.toResponse(
+                taskService.restoreTask(id, user)
+        );
+    }
 }

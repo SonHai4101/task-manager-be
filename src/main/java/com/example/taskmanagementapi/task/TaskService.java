@@ -72,6 +72,10 @@ public class TaskService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Task not found"));
 
+        if (task.getDeletedAt() != null) {
+            throw new IllegalArgumentException("Cannot update a deleted task");
+        }
+
         if (request.getTitle() != null) {
             task.setTitle(request.getTitle());
         }
@@ -117,5 +121,17 @@ public class TaskService {
         return taskRepository
                 .findAll(TaskSpecification.trash(user), finalPageable)
                 .map(taskMapper::toResponse);
+    }
+
+    @Transactional
+    public Task restoreTask(UUID taskId, User user) {
+        Task task = taskRepository
+                .findByIdAndOwnerIdAndDeletedAtIsNotNull(taskId, user.getId())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Task not found in trash")
+                );
+
+        task.setDeletedAt(null);
+        return task;
     }
 }
