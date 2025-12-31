@@ -19,7 +19,7 @@ public class TaskTrashCleanupJob {
     @Value("${task.trash.retention-days}")
     private long retentionDays;
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(cron = "0 0 3 * * ?")
     @Transactional
     public void cleanOldTrash() {
         LocalDateTime threshold =
