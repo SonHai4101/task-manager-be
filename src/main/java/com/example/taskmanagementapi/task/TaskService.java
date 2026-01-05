@@ -1,5 +1,6 @@
 package com.example.taskmanagementapi.task;
 
+import com.example.taskmanagementapi.audit.AuditLogService;
 import com.example.taskmanagementapi.common.exception.PageableUtil;
 import com.example.taskmanagementapi.task.dto.TaskFilterRequest;
 import com.example.taskmanagementapi.task.dto.TaskResponse;
@@ -26,6 +27,7 @@ import java.util.UUID;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
+    private final AuditLogService auditLogService;
 
     private TaskResponse toResponse(Task task) {
         return TaskResponse.builder()
@@ -53,10 +55,8 @@ public class TaskService {
     public Page<TaskResponse> getMyTasks(
             TaskFilterRequest filter,
             User user,
-            Pageable pageable
-    ) {
-        Pageable finalPageable =
-                PageableUtil.withDefaultSort(pageable, "createdAt");
+            Pageable pageable) {
+        Pageable finalPageable = PageableUtil.withDefaultSort(pageable, "createdAt");
         return taskRepository
                 .findAll(TaskSpecification.filter(filter, user), finalPageable)
                 .map(taskMapper::toResponse);
@@ -66,8 +66,7 @@ public class TaskService {
     public TaskResponse updateTask(
             UUID taskId,
             UpdateTaskRequest request,
-            User currentUser
-    ) {
+            User currentUser) {
         Task task = taskRepository.findByIdAndOwnerId(taskId, currentUser.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Task not found"));
@@ -105,18 +104,17 @@ public class TaskService {
         Task task = taskRepository.findByIdAndOwnerId(taskId, user.getId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Task not found or you are not the owner"
-                ));
+                        "Task not found or you are not the owner"));
 
         task.setDeletedAt(LocalDateTime.now());
+
+        auditLogService.log("DELETE_TASK", "TASK", task.getId(), user);
     }
 
     public Page<TaskResponse> getTrashTasks(
             User user,
-            Pageable pageable
-    ) {
-        Pageable finalPageable =
-                PageableUtil.withDefaultSort(pageable, "deletedAt");
+            Pageable pageable) {
+        Pageable finalPageable = PageableUtil.withDefaultSort(pageable, "deletedAt");
 
         return taskRepository
                 .findAll(TaskSpecification.trash(user), finalPageable)
@@ -132,14 +130,18 @@ public class TaskService {
             throw new IllegalArgumentException("No tasks found in trash");
         }
 
-        tasks.forEach(task -> task.setDeletedAt(null));
+        // tasks.forEach(task -> task.setDeletedAt(null));
+        for (Task task : tasks) {
+            task.setDeletedAt(null);
+
+            auditLogService.log("RESTORE_TASK", "TASK", task.getId(), user);
+        }
     }
 
     @Transactional
     public void permanentlyDeleteTasks(List<UUID> ids, User user) {
         taskRepository.deleteAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
                 ids,
-                user.getId()
-        );
+                user.getId());
     }
 }
