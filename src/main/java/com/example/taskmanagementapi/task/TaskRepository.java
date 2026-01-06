@@ -2,6 +2,8 @@ package com.example.taskmanagementapi.task;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -11,23 +13,25 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TaskRepository
-        extends JpaRepository<Task, UUID>,
+                extends JpaRepository<Task, UUID>,
                 JpaSpecificationExecutor<Task> {
-    Page<Task> findByOwnerId(UUID owner_id, Pageable pageable);
 
-    Optional<Task> findByIdAndOwnerId(UUID id, UUID owner_id);
+        @EntityGraph(value = "Task.withAssignedTo", type = EntityGraph.EntityGraphType.LOAD)
+        Page<Task> findAll(Specification<Task> spec, Pageable pageable);
 
-    List<Task> findAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
-            List<UUID> ids,
-            UUID ownerId
-    );
+        Page<Task> findByOwnerId(UUID owner_id, Pageable pageable);
 
-    void deleteAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
-            List<UUID> ids,
-            UUID ownerId
-    );
+        Optional<Task> findByIdAndOwnerId(UUID id, UUID owner_id);
 
-    void deleteAllByDeletedAtBefore(LocalDateTime threshold);
+        List<Task> findAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
+                        List<UUID> ids,
+                        UUID ownerId);
 
-    boolean existsByIdAndOwnerId(UUID id, UUID owner_id);
+        void deleteAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
+                        List<UUID> ids,
+                        UUID ownerId);
+
+        void deleteAllByDeletedAtBefore(LocalDateTime threshold);
+
+        boolean existsByIdAndOwnerId(UUID id, UUID owner_id);
 }

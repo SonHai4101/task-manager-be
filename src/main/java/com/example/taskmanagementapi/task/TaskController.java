@@ -55,8 +55,25 @@ public class TaskController {
             ) Pageable pageable,
             @AuthenticationPrincipal User user
     ) {
-//        System.out.println("AUTH USER = " + user);
+
         return taskService.getMyTasks(filter, user, pageable);
+    }
+
+    @Operation(summary = "Get tasks assigned to me")
+    @GetMapping("/assigned")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<TaskResponse> getAssignedTask(
+        @ParameterObject
+        @Valid TaskFilterRequest filter,
+        @Parameter(hidden = true)
+        @PageableDefault(
+                size = 10,
+                sort = "createdAt",
+                direction = Sort.Direction.DESC
+        ) Pageable pageable,
+        @AuthenticationPrincipal User user
+    ) {
+        return taskService.getAssignedTasks(filter, user, pageable);
     }
 
     @PatchMapping("/{id}")
@@ -115,4 +132,6 @@ public class TaskController {
     ) {
         taskService.permanentlyDeleteTasks(request.ids(), user);
     }
+
+    
 }

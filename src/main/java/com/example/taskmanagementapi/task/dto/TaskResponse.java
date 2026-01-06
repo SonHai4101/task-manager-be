@@ -16,6 +16,8 @@ import java.util.UUID;
         "description",
         "status",
         "priority",
+        "assignedToId",
+        "assignedToEmail",
         "createdAt"
 })
 
@@ -28,5 +30,9 @@ public class TaskResponse {
     private String description;
     private TaskStatus status;
     private Priority priority;
+
+    private UUID assignedToId;
+    private String assignedToEmail;
+
     private LocalDateTime createdAt;
 }

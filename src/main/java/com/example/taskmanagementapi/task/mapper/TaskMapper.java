@@ -8,8 +8,11 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface TaskMapper {
 
+    @Mapping(target = "assignedToId", source = "assignedTo.id")
+    @Mapping(target = "assignedToEmail", source = "assignedTo.email")
     TaskResponse toResponse(Task task);
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateTaskFromRequest(UpdateTaskRequest request,
-                               @MappingTarget Task task);
+            @MappingTarget Task task);
 }

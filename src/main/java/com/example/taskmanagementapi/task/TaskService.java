@@ -8,6 +8,8 @@ import com.example.taskmanagementapi.task.dto.UpdateTaskRequest;
 import com.example.taskmanagementapi.task.mapper.TaskMapper;
 import com.example.taskmanagementapi.task.spec.TaskSpecification;
 import com.example.taskmanagementapi.user.User;
+import com.example.taskmanagementapi.user.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
     private final AuditLogService auditLogService;
+    private final UserRepository userRepository;
 
     private TaskResponse toResponse(Task task) {
         return TaskResponse.builder()
@@ -143,5 +146,46 @@ public class TaskService {
         taskRepository.deleteAllByIdInAndOwnerIdAndDeletedAtIsNotNull(
                 ids,
                 user.getId());
+    }
+
+    @Transactional
+    public TaskResponse assignTask(
+            UUID taskId,
+            UUID assigneeId,
+            User currentUser) {
+        Task task = taskRepository.findByIdAndOwnerId(taskId, currentUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Task not found or not owned by user"));
+
+        User assignee = userRepository.findById(assigneeId)
+                .orElseThrow(() -> new IllegalArgumentException("Assignee not found"));
+
+        task.setAssignedTo(assignee);
+
+        return taskMapper.toResponse(task);
+    }
+
+    @Transactional
+    public TaskResponse unassignTask(UUID taskId, User currentUser) {
+        Task task = taskRepository.findByIdAndOwnerId(taskId, currentUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Task not found or not owned by user"));
+
+        task.setAssignedTo(null);
+
+        return taskMapper.toResponse(task);
+    }
+
+    public Page<TaskResponse> getAssignedTasks(
+        TaskFilterRequest filter,
+        User user,
+        Pageable pageable
+    ) {
+        Pageable finalPageable = 
+            PageableUtil.withDefaultSort(pageable, "createdAt");
+
+        return taskRepository
+                .findAll(
+                    TaskSpecification.assignedToMe(filter, user),
+                    finalPageable
+                ).map(taskMapper::toResponse);
     }
 }

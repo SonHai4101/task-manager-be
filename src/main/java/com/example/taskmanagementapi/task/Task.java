@@ -15,6 +15,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@NamedEntityGraph(
+    name = "Task.withAssignedTo",
+    attributeNodes = @NamedAttributeNode("assignedTo")
+)
 @Table(name = "tasks")
 public class Task {
     @Id
@@ -40,6 +44,10 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id")
     private User owner;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "assigned_to_id")
+    private User assignedTo;
 
     @CreationTimestamp
     @Column(updatable = false)

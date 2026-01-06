@@ -3,6 +3,8 @@ package com.example.taskmanagementapi.task.spec;
 import com.example.taskmanagementapi.task.Task;
 import com.example.taskmanagementapi.task.dto.TaskFilterRequest;
 import com.example.taskmanagementapi.user.User;
+
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -12,72 +14,121 @@ import java.util.UUID;
 
 public class TaskSpecification {
 
-    public static Specification<Task> filter(
-            TaskFilterRequest filter,
-            User user
-    ) {
-        return (root, query, cb) -> {
+        public static Specification<Task> filter(
+                        TaskFilterRequest filter,
+                        User user) {
+                return (root, query, cb) -> {
 
-            List<Predicate> predicates = new ArrayList<>();
+                        if (Task.class.equals(query.getResultType())) {
+                                root.fetch("assignedTo", JoinType.LEFT);
+                                query.distinct(true);
+                        }
 
-            // 🔐 Only user’s tasks
-            predicates.add(
-                    cb.equal(root.get("owner").get("id"), user.getId())
-            );
+                        List<Predicate> predicates = new ArrayList<>();
 
-            predicates.add(
-                    cb.isNull(root.get("deletedAt"))
-            );
+                        // Only user’s tasks
+                        predicates.add(
+                                        cb.equal(root.get("owner").get("id"), user.getId()));
 
-            if (filter.getTaskStatus() != null) {
-                predicates.add(
-                        cb.equal(root.get("status"), filter.getTaskStatus())
-                );
-            }
+                        predicates.add(
+                                        cb.isNull(root.get("deletedAt")));
 
-            if (filter.getPriority() != null) {
-                predicates.add(
-                        cb.equal(root.get("priority"), filter.getPriority())
-                );
-            }
+                        if (filter.getTaskStatus() != null) {
+                                predicates.add(
+                                                cb.equal(root.get("status"), filter.getTaskStatus()));
+                        }
 
-            if (filter.getKeyword() != null && !filter.getKeyword().isBlank()) {
-                String like = "%" + filter.getKeyword().toLowerCase() + "%";
+                        if (filter.getPriority() != null) {
+                                predicates.add(
+                                                cb.equal(root.get("priority"), filter.getPriority()));
+                        }
 
-                predicates.add(
-                        cb.or(
-                                cb.like(cb.lower(root.get("title")), like),
-                                cb.like(cb.lower(root.get("description")), like)
-                        )
-                );
-            }
+                        if (filter.getKeyword() != null && !filter.getKeyword().isBlank()) {
+                                String like = "%" + filter.getKeyword().toLowerCase() + "%";
 
-            if (filter.getFrom() != null) {
-                predicates.add(
-                        cb.greaterThanOrEqualTo(
-                                root.get("createdAt"),
-                                filter.getFrom().atStartOfDay()
-                        )
-                );
-            }
+                                predicates.add(
+                                                cb.or(
+                                                                cb.like(cb.lower(root.get("title")), like),
+                                                                cb.like(cb.lower(root.get("description")), like)));
+                        }
 
-            if (filter.getTo() != null) {
-                predicates.add(
-                        cb.lessThanOrEqualTo(
-                                root.get("createdAt"),
-                                filter.getTo().atTime(23, 59, 59)
-                        )
-                );
-            }
+                        if (filter.getFrom() != null) {
+                                predicates.add(
+                                                cb.greaterThanOrEqualTo(
+                                                                root.get("createdAt"),
+                                                                filter.getFrom().atStartOfDay()));
+                        }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-    }
+                        if (filter.getTo() != null) {
+                                predicates.add(
+                                                cb.lessThanOrEqualTo(
+                                                                root.get("createdAt"),
+                                                                filter.getTo().atTime(23, 59, 59)));
+                        }
 
-    public static Specification<Task> trash(User user) {
-        return (root, query, cb) -> cb.and(
-                cb.equal(root.get("owner"), user),
-                cb.isNotNull(root.get("deletedAt"))
-        );
-    }
+                        return cb.and(predicates.toArray(new Predicate[0]));
+                };
+        }
+
+        public static Specification<Task> trash(User user) {
+                return (root, query, cb) -> cb.and(
+                                cb.equal(root.get("owner"), user),
+                                cb.isNotNull(root.get("deletedAt")));
+        }
+
+        public static Specification<Task> assignedToMe(
+                        TaskFilterRequest filter,
+                        User user) {
+                return (root, query, cb) -> {
+
+                        // fetch assignee safely
+                        if (Task.class.equals(query.getResultType())) {
+                                root.fetch("assignedTo", JoinType.LEFT);
+                                query.distinct(true);
+                        }
+
+                        List<Predicate> predicates = new ArrayList<>();
+
+                        // Assigned to current user
+                        predicates.add(
+                                        cb.equal(root.get("assignedTo").get("id"), user.getId()));
+
+                        // Not deleted
+                        predicates.add(
+                                        cb.isNull(root.get("deletedAt")));
+
+                        // Reuse existing filters
+                        if (filter.getTaskStatus() != null) {
+                                predicates.add(cb.equal(root.get("status"), filter.getTaskStatus()));
+                        }
+
+                        if (filter.getPriority() != null) {
+                                predicates.add(cb.equal(root.get("priority"), filter.getPriority()));
+                        }
+
+                        if (filter.getKeyword() != null && !filter.getKeyword().isBlank()) {
+                                String like = "%" + filter.getKeyword().toLowerCase() + "%";
+                                predicates.add(
+                                                cb.or(
+                                                                cb.like(cb.lower(root.get("title")), like),
+                                                                cb.like(cb.lower(root.get("description")), like)));
+                        }
+
+                        if (filter.getFrom() != null) {
+                                predicates.add(
+                                                cb.greaterThanOrEqualTo(
+                                                                root.get("createdAt"),
+                                                                filter.getFrom().atStartOfDay()));
+                        }
+
+                        if (filter.getTo() != null) {
+                                predicates.add(
+                                                cb.lessThanOrEqualTo(
+                                                                root.get("createdAt"),
+                                                                filter.getTo().atTime(23, 59, 59)));
+                        }
+
+                        return cb.and(predicates.toArray(new Predicate[0]));
+                };
+        }
 }
