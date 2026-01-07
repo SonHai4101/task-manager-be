@@ -2,8 +2,12 @@ package com.example.taskmanagementapi.audit;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.example.taskmanagementapi.audit.dto.AuditLogResponse;
+import com.example.taskmanagementapi.audit.mapper.AuditLogMapper;
 import com.example.taskmanagementapi.task.Task;
 import com.example.taskmanagementapi.user.User;
 
@@ -13,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuditLogService {
     private final AuditLogRepository auditLogRepository;
+    private final AuditLogMapper auditLogMapper;
 
     public void log(
             String action,
@@ -47,4 +52,19 @@ public class AuditLogService {
         auditLogRepository.save(log);
     }
 
+    public Page<AuditLogResponse> getTaskAuditLogs(
+            UUID taskId,
+            Pageable pageable) {
+        return auditLogRepository
+                .findByEntityTypeAndEntityId("TASK", taskId, pageable)
+                .map(auditLogMapper::toResponse);
+    }
+
+    public Page<AuditLogResponse> getMyAuditLogs(
+            User user,
+            Pageable pageable) {
+        return auditLogRepository
+                .findByActorId(user.getId(), pageable)
+                .map(auditLogMapper::toResponse);
+    }
 }
