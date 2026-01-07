@@ -161,6 +161,8 @@ public class TaskService {
 
         task.setAssignedTo(assignee);
 
+        auditLogService.logTaskAssigned(task, currentUser, assignee);
+
         return taskMapper.toResponse(task);
     }
 
@@ -175,17 +177,15 @@ public class TaskService {
     }
 
     public Page<TaskResponse> getAssignedTasks(
-        TaskFilterRequest filter,
-        User user,
-        Pageable pageable
-    ) {
-        Pageable finalPageable = 
-            PageableUtil.withDefaultSort(pageable, "createdAt");
+            TaskFilterRequest filter,
+            User user,
+            Pageable pageable) {
+        Pageable finalPageable = PageableUtil.withDefaultSort(pageable, "createdAt");
 
         return taskRepository
                 .findAll(
-                    TaskSpecification.assignedToMe(filter, user),
-                    finalPageable
-                ).map(taskMapper::toResponse);
+                        TaskSpecification.assignedToMe(filter, user),
+                        finalPageable)
+                .map(taskMapper::toResponse);
     }
 }

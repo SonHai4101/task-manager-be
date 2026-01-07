@@ -43,6 +43,12 @@ public class AuditLog {
     @Column(nullable = false)
     private String actorEmail;
 
+    private UUID targetUserId;
+
+    private String targetUserEmail;
+
+    private String message;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }
