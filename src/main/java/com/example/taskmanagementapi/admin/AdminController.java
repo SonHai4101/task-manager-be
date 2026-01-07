@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.taskmanagementapi.audit.AuditLog;
 import com.example.taskmanagementapi.audit.AuditLogRepository;
+import com.example.taskmanagementapi.audit.AuditLogService;
+import com.example.taskmanagementapi.audit.dto.AuditLogResponse;
 import com.example.taskmanagementapi.task.TaskService;
 import com.example.taskmanagementapi.task.dto.TaskResponse;
 import com.example.taskmanagementapi.user.User;
@@ -31,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
     private final AuditLogRepository auditLogRepository;
     private final TaskService taskService;
+    private final AuditLogService auditLogService;
 
     @GetMapping
     public Page<AuditLog> getLogs(
@@ -51,5 +54,18 @@ public class AdminController {
             @PathVariable UUID taskId,
             @AuthenticationPrincipal User currentUser) {
         return taskService.unassignTask(taskId, currentUser);
+    }
+
+    @GetMapping("/users/{usersId}")
+    public Page<AuditLogResponse> getUserAuditLogAsAdmin(
+        @PathVariable UUID userId,
+        @ParameterObject
+        @Parameter(hidden = true)
+        @PageableDefault(
+            sort = "createdAt",
+            direction = Sort.Direction.DESC
+        ) Pageable pageable
+    ) {
+        return auditLogService.getUserAuditLogAsAdmin(userId, pageable);
     }
 }

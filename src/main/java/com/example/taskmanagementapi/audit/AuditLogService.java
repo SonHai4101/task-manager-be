@@ -67,4 +67,14 @@ public class AuditLogService {
                 .findByActorId(user.getId(), pageable)
                 .map(auditLogMapper::toResponse);
     }
+
+    // Admin only
+    public Page<AuditLogResponse> getUserAuditLogAsAdmin(
+        UUID userId,
+        Pageable pageable
+    ) {
+        return auditLogRepository
+                .findByActorId(userId, pageable)
+                .map(auditLogMapper::toResponse);
+    }
 }
