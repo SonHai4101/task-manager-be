@@ -6,12 +6,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.example.taskmanagementapi.dto.audit.AuditLogFilterRequest;
 import com.example.taskmanagementapi.dto.audit.AuditLogResponse;
 import com.example.taskmanagementapi.entity.AuditLog;
 import com.example.taskmanagementapi.entity.Task;
 import com.example.taskmanagementapi.entity.User;
 import com.example.taskmanagementapi.mapper.AuditLogMapper;
 import com.example.taskmanagementapi.repository.AuditLogRepository;
+import com.example.taskmanagementapi.spec.AuditLogSpecification;
 
 import lombok.RequiredArgsConstructor;
 
@@ -78,5 +80,15 @@ public class AuditLogService {
         return auditLogRepository
                 .findByActorId(userId, pageable)
                 .map(auditLogMapper::toResponse);
+    }
+
+    public Page<AuditLog> getLogs(
+        AuditLogFilterRequest filter,
+        Pageable pageable
+    ) {
+        return auditLogRepository.findAll(
+            AuditLogSpecification.filter(filter),
+            pageable
+        );
     }
 }

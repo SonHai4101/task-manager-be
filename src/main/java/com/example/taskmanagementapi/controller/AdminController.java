@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.taskmanagementapi.dto.audit.AuditLogFilterRequest;
 import com.example.taskmanagementapi.dto.audit.AuditLogResponse;
 import com.example.taskmanagementapi.dto.task.TaskResponse;
 import com.example.taskmanagementapi.entity.AuditLog;
@@ -37,8 +38,9 @@ public class AdminController {
 
     @GetMapping("/audit-logs")
     public Page<AuditLog> getLogs(
-            @ParameterObject @Parameter(hidden = true) @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return auditLogRepository.findAll(pageable);
+            @ParameterObject AuditLogFilterRequest filter,
+            @Parameter(hidden = true) @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return auditLogService.getLogs(filter, pageable);
     }
 
     @PatchMapping("/{taskId}/assign/{userId}")
@@ -58,14 +60,8 @@ public class AdminController {
 
     @GetMapping("/users/{usersId}")
     public Page<AuditLogResponse> getUserAuditLogAsAdmin(
-        @PathVariable UUID userId,
-        @ParameterObject
-        @Parameter(hidden = true)
-        @PageableDefault(
-            sort = "createdAt",
-            direction = Sort.Direction.DESC
-        ) Pageable pageable
-    ) {
+            @PathVariable UUID userId,
+            @ParameterObject @Parameter(hidden = true) @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return auditLogService.getUserAuditLogAsAdmin(userId, pageable);
     }
 }
