@@ -18,8 +18,12 @@ import com.example.taskmanagementapi.entity.User;
 import com.example.taskmanagementapi.service.AuditLogService;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(
+    name = "5. Audit log"
+)
 @RestController
 @RequestMapping("/audit-logs")
 @RequiredArgsConstructor

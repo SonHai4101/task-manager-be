@@ -20,19 +20,22 @@ import com.example.taskmanagementapi.dto.audit.AuditLogResponse;
 import com.example.taskmanagementapi.dto.task.TaskResponse;
 import com.example.taskmanagementapi.entity.AuditLog;
 import com.example.taskmanagementapi.entity.User;
-import com.example.taskmanagementapi.repository.AuditLogRepository;
 import com.example.taskmanagementapi.service.AuditLogService;
 import com.example.taskmanagementapi.service.TaskService;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(
+    name = "3. Admin",
+    description = "Admin api endpoint"
+)
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
-    private final AuditLogRepository auditLogRepository;
     private final TaskService taskService;
     private final AuditLogService auditLogService;
 

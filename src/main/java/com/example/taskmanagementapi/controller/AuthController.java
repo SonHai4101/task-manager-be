@@ -15,6 +15,11 @@ import com.example.taskmanagementapi.dto.auth.RegisterRequest;
 import com.example.taskmanagementapi.dto.auth.RegisterResponse;
 import com.example.taskmanagementapi.service.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(
+    name = "2. Auth"
+)
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor

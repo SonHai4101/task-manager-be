@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
@@ -12,14 +13,24 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 @Configuration
+@JsonPropertyOrder(alphabetic = true)
 @OpenAPIDefinition(
         info = @Info(
                 title = "Task Management API",
                 version = "1.0",
                 description = "JWT secured API"
         ),
-        security = @SecurityRequirement(name = "bearerAuth")
+        security = @SecurityRequirement(name = "bearerAuth"),
+        tags = {
+                @Tag(name = "1. User"),
+                @Tag(name = "2. Auth"),
+                @Tag(name = "3. Admin"),
+                @Tag(name = "4. Tasks"),
+                @Tag(name = "5. Audit log"),
+        }
 )
 @SecurityScheme(
         name = "bearerAuth",
