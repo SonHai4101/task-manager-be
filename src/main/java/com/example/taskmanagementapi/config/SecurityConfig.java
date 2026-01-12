@@ -12,16 +12,19 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.example.taskmanagementapi.service.JwtAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final CorsConfigurationSource corsConfigurationSource;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http.csrf(csrf -> csrf.disable())
+                http.cors(cors -> cors.configurationSource(corsConfigurationSource))
+                                .csrf(csrf -> csrf.disable())
                                 .formLogin(form -> form.disable())
                                 .logout(logout -> logout.disable())
                                 .authorizeHttpRequests(auth -> auth
